@@ -3,18 +3,7 @@ package practice_3_hash_function;
 import java.io.UnsupportedEncodingException;
 
 public class Main {
-	
-	// функция циклического сдвига влево с указанным промежутком
-	private static int rotateLeft (int x, int shift) { 
-
-		String s = Integer.toBinaryString(x);		
-		s = Integer.toBinaryString(x << shift);		
-		s = Integer.toBinaryString(x >>> (32 - shift));
 		
-        return ((x << shift) | (x >>> (32 - shift)));
-
-    }
-	
 	// функция хеширования GetSHA1Hash возвращает зашифрованную строку в шестнадцатеричном формате
 	public static String GetSHA1Hash(String message) throws UnsupportedEncodingException {
 		
@@ -46,10 +35,10 @@ public class Main {
 		int l = binaryCode.length();
 		
 		// прибавление единицы к сообщению в виде бинарного кода
-		String binarycodeWithOne = binaryCode + "10000000";
+		String binarycodeWithOne = binaryCode + "1";
 		
 		// получение числа, кратного 512 битам
-		int y = (l+8+64)%512;
+		int y = (l+1+64)%512;
 		int x = 512 - y;
 		
 		// заполнение числа количеством нулей, равным х 
@@ -86,7 +75,7 @@ public class Main {
 		    }
 	    	
 	    	for (int j = 16; j < 80; j++) {
-	    		binaryToDec[j] = rotateLeft(binaryToDec[j-3] ^ binaryToDec[j-8] ^ binaryToDec[j-14] ^ binaryToDec[j-16], 1);	
+	    		binaryToDec[j] = Integer.rotateLeft(binaryToDec[j-3] ^ binaryToDec[j-8] ^ binaryToDec[j-14] ^ binaryToDec[j-16], 1);	
 	    	}
 	    				
 			// инициализация a, b, c, d, e константными значениями
@@ -112,10 +101,10 @@ public class Main {
 			            k = 0xCA62C1D6; 
 			     }
 				 
-			     temp = rotateLeft(a, 5) + f + e + k + binaryToDec[j];
+			     temp = Integer.rotateLeft(a, 5) + f + e + k + binaryToDec[j];
 			     e = d;
 			     d = c;
-			     c = rotateLeft(b, 30);
+			     c = Integer.rotateLeft(b, 30);
 			     b = a;
 			     a = temp;	
 			}
@@ -160,7 +149,7 @@ public class Main {
             h5Length = h5L.toString();
         };
 
-        //result
+        //результат
         hash = h1Length + h2Length + h3Length + h4Length + h5Length;
 	    return hash;
 	    
