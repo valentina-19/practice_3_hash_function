@@ -1,24 +1,21 @@
 package practice_3_hash_function;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-
-import sun.security.x509.UniqueIdentity;
 
 public class Main {
 	
 	// функция циклического сдвига влево с указанным промежутком
-	private static long rotateLeft (long value, int distanse) {
-		String bValue = String.format("%31s", Long.toBinaryString(value)).replace(' ', '0');
-		String rValue = bValue.substring(0, distanse-1);
-		String lValue = bValue.substring(distanse-1);
-		for (int i = 0; i < lValue.length(); i++) {
-			rValue = lValue.substring(i, i + 1) + rValue;
-		}
-		return Long.parseLong(rValue, 2);
-	}
+	private static int rotateLeft (int x, int shift) { 
+
+		String s = Integer.toBinaryString(x);		
+		s = Integer.toBinaryString(x << shift);		
+		s = Integer.toBinaryString(x >>> (32 - shift));
+		
+        return ((x << shift) | (x >>> (32 - shift)));
+
+    }
 	
-	// функция хеширования GetSHA1Hash возвращает 
+	// функция хеширования GetSHA1Hash возвращает зашифрованную строку в шестнадцатеричном формате
 	public static String GetSHA1Hash(String message) throws UnsupportedEncodingException {
 		
 		//преобразование входной строки сообщения в бинарный код
@@ -35,32 +32,24 @@ public class Main {
 		
 		// переменная хранит результирующий хеш в виде строки
 		String hash = "";
-		
-		// объявление и инициализация 32-битных констант в виде шестнадцатеричной строки
-		String h0 = "67452301";
-		String h1 = "EFCDAB89";
-		String h2 = "98BADCFE";
-		String h3 = "10325476";
-		String h4 = "C3D2E1F0"; 
-		
-		// объявление переменных для присвоения значений констант
-		long a;
-		long b;
-		long c;
-		long d;
-		long e;
-		long f = 0;
-		long k = 0;
-		long temp;
+		// объявление переменных для присвоения значений констант		
+		int a;
+		int b;
+		int c;
+		int d;
+		int e;
+		int f = 0;
+		int k = 0;
+		int temp;
 		
 		// длина сообщения, преобразованного в бинарный код
 		int l = binaryCode.length();
 		
 		// прибавление единицы к сообщению в виде бинарного кода
-		String binarycodeWithOne = binaryCode + "1";
+		String binarycodeWithOne = binaryCode + "10000000";
 		
 		// получение числа, кратного 512 битам
-		int y = (l+1+64)%512;
+		int y = (l+8+64)%512;
 		int x = 512 - y;
 		
 		// заполнение числа количеством нулей, равным х 
@@ -78,32 +67,28 @@ public class Main {
 		String[] block512 = new String [preprocessingStr.length()/512];
 		// строка для хранения слова размером 32 бит
 		String w32 = "";
+		
+		// константные значения
+		int intH0 = 0x67452301;
+        int intH1 = 0xEFCDAB89;
+        int intH2 = 0x98BADCFE;
+        int intH3 = 0x10325476;
+        int intH4 = 0xC3D2E1F0;
 				
 		// цикл разбивает обработанную входную строку на подстроки размером по 512 бит каждая
 	    for (int i = 0; i < block512.length; i++) {
 	    	block512[i] = preprocessingStr.substring(i*512, (i+1)*512);
-	    	long binaryToDec[] = new long[80];
+	    	int binaryToDec[] = new int[80];
 	    	// цикл разбивает строку размером 512 бит на подстроки размером по 32 бита
 	    	for (int j = 0; j < 16; j++) {
 		    	w32 = block512[i].substring(j*32, (j+1)*32);
-		    	// перевод подстрок в двоичный код
-		    	for (int t = 31; t >= 0; t--) {
-		    		binaryToDec[j] += new Integer(w32.substring(t, t+1))*Math.pow(2, 31-t);		 
-		    	}	 
+		    	binaryToDec[j] = Integer.parseUnsignedInt(w32, 2);
 		    }
-	    	
 	    	
 	    	for (int j = 16; j < 80; j++) {
 	    		binaryToDec[j] = rotateLeft(binaryToDec[j-3] ^ binaryToDec[j-8] ^ binaryToDec[j-14] ^ binaryToDec[j-16], 1);	
 	    	}
-	    	
-	    	// перевод констант из строкового шестандцатеричного формата в длинный целочисленный тип
-	    	long intH0 = Long.parseLong(h0, 16);
-			long intH1 = Long.parseLong(h1, 16);
-			long intH2 = Long.parseLong(h2, 16);
-			long intH3 = Long.parseLong(h3, 16);
-			long intH4 = Long.parseLong(h4, 16);
-			
+	    				
 			// инициализация a, b, c, d, e константными значениями
 			a = intH0;
 			b = intH1;
@@ -115,16 +100,16 @@ public class Main {
 			for (int j = 0; j < 80; j++) {
 				 if (j <= 19) {
 			            f = (b & c) | ((~b) & d);
-			            k = Long.parseLong("5A827999", 16);
+			            k = 0x5A827999;
 				 } else if (j <= 39) {
 			            f = b ^ c ^ d;
-			            k = Long.parseLong("6ED9EBA1", 16);
+			            k = 0x6ED9EBA1;
 			     } else if (j <= 59) {
 			            f = (b & c) | (b & d) | (c & d);
-			            k = Long.parseLong("8F1BBCDC", 16);
+			            k = 0x8F1BBCDC;
 			     } else if (j <= 79) {
 			            f = b ^ c ^ d;
-			            k = Long.parseLong("CA62C1D6", 16); 
+			            k = 0xCA62C1D6; 
 			     }
 				 
 			     temp = rotateLeft(a, 5) + f + e + k + binaryToDec[j];
@@ -132,17 +117,51 @@ public class Main {
 			     d = c;
 			     c = rotateLeft(b, 30);
 			     b = a;
-			     a = temp;		     
+			     a = temp;	
 			}
+			
 			// вычисление промежуточных значений констант
 			 intH0 = intH0 + a;
 			 intH1 = intH1 + b;
 			 intH2 = intH2 + c;
 			 intH3 = intH3 + d;
 			 intH4 = intH4 + e;
-
-			hash += (intH0 << 128) | (intH1 << 96) | (intH2 << 64) | (intH3 << 32) | intH4;
 	    }
+	    String h1Length = Integer.toHexString(intH0);
+        String h2Length = Integer.toHexString(intH1);
+        String h3Length = Integer.toHexString(intH2);
+        String h4Length = Integer.toHexString(intH3);
+        String h5Length = Integer.toHexString(intH4);
+
+        //Integer.toHexString не содержит дополнительных начальных нулей
+        if(h1Length.length() < 8) {
+            StringBuilder h1L = new StringBuilder(h1Length);
+            h1L.insert(0,0);
+            h1Length = h1L.toString();
+        };
+        if(h2Length.length() < 8) {
+            StringBuilder h2L = new StringBuilder(h2Length);
+            h2L.insert(0,0);
+            h2Length = h2L.toString();
+        };
+        if(h3Length.length() < 8) {
+            StringBuilder h3L = new StringBuilder(h3Length);
+            h3L.insert(0,0);
+            h3Length = h3L.toString();
+        };
+        if(h4Length.length() < 8) {
+            StringBuilder h4L = new StringBuilder(h4Length);
+            h4L.insert(0,0);
+            h4Length = h4L.toString();
+        };
+        if(h5Length.length() < 8) {
+            StringBuilder h5L = new StringBuilder(h5Length);
+            h5L.insert(0,0);
+            h5Length = h5L.toString();
+        };
+
+        //result
+        hash = h1Length + h2Length + h3Length + h4Length + h5Length;
 	    return hash;
 	    
 	}
